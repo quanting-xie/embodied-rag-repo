@@ -1,0 +1,9 @@
+*.gml
+*.json
+*.txt
+*.jsonl
+*.csv
+*.html
+*.sqlite
+*.lock
+*.log

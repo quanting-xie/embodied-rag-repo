@@ -18,15 +18,18 @@ import argparse
 import traceback
 from utils.spatial import compute_spatial_score, normalize_location_format, compute_haversine_distance
 import time
-
+import networkx as nx
+from llm import LLMInterface
+from llm_retrieval import ParallelLLMRetriever
+from config import Config
+        
 class RetrievalEvaluator:
     def __init__(self, graph_path: str = None, vector_db_path: str = None, image_dir: str = None):
         self.chat = None
         self.query_locations_file = Path("query_locations.json")
         self.results_dir = Path(__file__).parent.absolute() / "evaluation_results"
         self.results_dir.mkdir(exist_ok=True)
-        self.k = 5  # Top-k results to compare
-        self.radius = 500  # Default search radius in meters
+        self.k = Config.RETRIEVAL['search_params']['k-branch']  # Top-k results to compare
         
         # Set paths from arguments or use defaults, ensuring absolute paths
         self.graph_path = Path(graph_path).resolve() 
@@ -44,11 +47,9 @@ class RetrievalEvaluator:
         # Create directories if they don't exist
         self.vector_db_path.mkdir(parents=True, exist_ok=True)
         
-        # Default center location (Pittsburgh)
-        self.default_center = {
-            'latitude': 40.4433,
-            'longitude': -79.9436
-        }
+        # Use default center from config instead of hardcoding
+        self.default_center = Config.LOCATION['default_center']
+        self.radius = Config.LOCATION['search_radius']  # Also move radius to config
         
         # Enhanced vector_db path validation
         if self.vector_db_path.exists():
@@ -82,11 +83,7 @@ class RetrievalEvaluator:
         # Initialize original retriever
         self.chat = await EnvironmentalChat.create()
         
-        # Initialize parallel retriever
-        import networkx as nx
-        from llm import LLMInterface
-        from llm_retrieval import ParallelLLMRetriever
-        
+
         # Load graph
         graph = nx.read_gml(self.graph_path)
         llm_interface = LLMInterface()
@@ -302,7 +299,6 @@ class RetrievalEvaluator:
 
         # Get the graph from chat instance
         graph = self.chat.forests[list(self.chat.forests.keys())[0]]
-        
         distances = []
         level1_parents = set()
         
@@ -314,7 +310,6 @@ class RetrievalEvaluator:
                     # Calculate raw distance in meters
                     distance = compute_haversine_distance(query_location, node_loc)
                     # Normalize distance to 0-1 score (closer = higher score)
-                    # Using 2000m (self.radius) as reference distance
                     spatial_score = max(0, 1 - (distance / self.radius))
                     distances.append(spatial_score)
                     
@@ -642,8 +637,8 @@ Rate the relevance and quality (0-100):"""
             'timestamp': datetime.now().isoformat(),
             'timing': timing_metrics,
             'metrics': {
-                'correctness': semantic_metrics['top1'],
-                'affirmness': semantic_metrics['top1_std'],
+                'semantic_relativity': semantic_metrics['top1'],
+                'std': semantic_metrics['top1_std'],
                 'spatial_relativity': spatial_metrics['score'] if retrieved_nodes else 0.0,
             },
             'retrieved_node': retrieved_nodes[0] if retrieved_nodes else None
@@ -656,8 +651,8 @@ Rate the relevance and quality (0-100):"""
             'timestamp': datetime.now().isoformat(),
             'timing': timing_metrics,
             'metrics': {
-                'correctness': semantic_metrics['top5'],
-                'affirmness': semantic_metrics['top5_std'],
+                'semantic_relativity': semantic_metrics['top5'],
+                'std': semantic_metrics['top5_std'],
                 'spatial_relativity': spatial_metrics['mean_distance'] if retrieved_nodes else 0.0,
                 'comprehensiveness': spatial_metrics['level1_coverage'] if retrieved_nodes else 0.0
             },
@@ -676,13 +671,13 @@ Rate the relevance and quality (0-100):"""
             print(f"Location: {location}")
         
         print("\nTop 1 Metrics:")
-        print(f"├─ Correctness: {top1_metrics['metrics']['correctness']:.3f}")
-        print(f"├─ Affirmness: {top1_metrics['metrics']['affirmness']:.3f}")
+        print(f"├─ Correctness: {top1_metrics['metrics']['semantic_relativity']:.3f}")
+        print(f"├─ Affirmness: {top1_metrics['metrics']['std']:.3f}")
         print(f"└─ Spatial Relativity: {top1_metrics['metrics']['spatial_relativity']:.3f}")
         
         print("\nTop 5 Metrics:")
-        print(f"├─ Correctness: {top5_metrics['metrics']['correctness']:.3f}")
-        print(f"├─ Affirmness: {top5_metrics['metrics']['affirmness']:.3f}")
+        print(f"├─ Correctness: {top5_metrics['metrics']['semantic_relativity']:.3f}")
+        print(f"├─ Affirmness: {top5_metrics['metrics']['std']:.3f}")
         print(f"├─ Spatial Relativity: {top5_metrics['metrics']['spatial_relativity']:.3f}")
         print(f"└─ Comprehensiveness: {top5_metrics['metrics']['comprehensiveness']:.3f}")
 
@@ -711,8 +706,8 @@ Rate the relevance and quality (0-100):"""
                 # Top 1 metrics
                 top_1_node = retrieved_nodes[0] if retrieved_nodes else None
                 top_1_metrics = {
-                    'correctness': semantic_metrics['top1'],  # Already normalized 0-1
-                    'affirmness': semantic_metrics['top1_std'],  # Already normalized 0-1
+                    'semantic_relativity': semantic_metrics['top1'],  # Already normalized 0-1
+                    'std': semantic_metrics['top1_std'],  # Already normalized 0-1
                     'spatial_relativity': spatial_metrics['top1_spatial'],
                     'overall_score': semantic_metrics['top1'] * spatial_metrics['top1_spatial'],
                     'node_details': {
@@ -726,8 +721,8 @@ Rate the relevance and quality (0-100):"""
                 
                 # Top 5 metrics
                 top_5_metrics = {
-                    'correctness': semantic_metrics['top5'],
-                    'affirmness': semantic_metrics['top5_std'],
+                    'semantic_relativity': semantic_metrics['top5'],
+                    'std': semantic_metrics['top5_std'],
                     'spatial_relativity': spatial_metrics['top5_spatial'],
                     'overall_score': semantic_metrics['top5'] * spatial_metrics['top5_spatial']
                 }

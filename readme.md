@@ -1,7 +1,7 @@
 <p align="center">
 <h1 align="center"><strong>Embodied-RAG: General Non-parametric Embodied Memory for Retrieval and Generation</strong></h1>
   <p align="center">
-    <a href='[https://quanting-xie.github.io/Embodied-RAG-web/](https://quanting-xie.github.io/Embodied-RAG-web/)' target='_blank'>Project Website</a>&emsp;
+    <a href='https://quanting-xie.github.io/Embodied-RAG-web/' target='_blank'>Project Website</a>&emsp;
     <br>
     Carnegie Mellon University
     <br>
@@ -11,7 +11,7 @@
 <div id="top" align="center">
 
 [![Paper](https://img.shields.io/badge/Paper-%F0%9F%93%96-yellow)](https://arxiv.org/abs/2409.18313)    
-[![Video Explaination](https://img.shields.io/badge/Project-%F0%9F%9A%80-pink)](https://youtu.be/UQdzX1G1-9o?si=l4u6rbZtuVmK78c5)
+[![Video Explanation](https://img.shields.io/badge/Video-%F0%9F%9A%80-pink)](https://youtu.be/UQdzX1G1-9o?si=l4u6rbZtuVmK78c5)
 [![Demo](https://img.shields.io/badge/Demo-🎬-red)](https://youtu.be/LcB89Rdyxhg?si=uCRCMImA_6sV24AR)
 
 </div>

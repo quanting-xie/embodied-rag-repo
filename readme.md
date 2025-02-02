@@ -10,9 +10,9 @@
 
 <div id="top" align="center">
 
-[![Paper](https://img.shields.io/badge/Paper-%F0%9F%93%96-yellow)](https://arxiv.org/abs/your-paper)
-[![Project](https://img.shields.io/badge/Project-%F0%9F%9A%80-pink)](https://github.com/your-username/E-RAG)
-[![Demo](https://img.shields.io/badge/Demo-🎬-red)](https://youtube.com/your-demo)
+[![Paper](https://img.shields.io/badge/Paper-%F0%9F%93%96-yellow)]([text](https://arxiv.org/abs/2409.18313))    
+[![Video Explaination](https://img.shields.io/badge/Project-%F0%9F%9A%80-pink)]([text](https://youtu.be/UQdzX1G1-9o?si=l4u6rbZtuVmK78c5))
+[![Demo](https://img.shields.io/badge/Demo-🎬-red)]([text](https://youtu.be/LcB89Rdyxhg?si=uCRCMImA_6sV24AR))
 
 </div>
 
